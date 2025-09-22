@@ -44,6 +44,7 @@ func (fsys *FileSys) LoadTask() (map[string]*models.Task, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			return res, nil
 		}
+
 		return nil, err
 	}
 	for _, entry := range entries {
@@ -54,8 +55,9 @@ func (fsys *FileSys) LoadTask() (map[string]*models.Task, error) {
 		if err != nil {
 			continue
 		}
+
 		var t models.Task
-		if json.Unmarshal(b, &t) == nil && t.ID != "" {
+		if json.Unmarshal(b, &t) == nil && t.ID != " " {
 			res[t.ID] = &t
 		}
 	}
