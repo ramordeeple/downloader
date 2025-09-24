@@ -8,6 +8,11 @@ import (
 	"test-task/internal/store"
 )
 
+type Config struct {
+	QueueSize int
+	Workers   int
+}
+
 type Service struct {
 	mutex sync.Mutex
 	tasks map[string]*models.Task
