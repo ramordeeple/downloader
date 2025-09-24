@@ -1,8 +1,10 @@
 package models
 
+import "time"
+
 type Task struct {
 	ID        string     `json:"id"`
-	CreatedAt string     `json:"created_at"`
+	CreatedAt time.Time  `json:"created_at"`
 	Status    TaskStatus `json:"status"`
 	Files     []File     `json:"files"`
 }
