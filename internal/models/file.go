@@ -1,8 +1,9 @@
 package models
 
 type File struct {
-	URL    string     `json:"url"`
-	Name   string     `json:"name"`
-	Status FileStatus `json:"status"`
-	Error  string     `json:"error, omitempty"`
+	URL       string     `json:"url"`
+	Name      string     `json:"name"`
+	Status    FileStatus `json:"status"`
+	Error     string     `json:"error,omitempty"`
+	SizeBytes int64      `json:"size_bytes,omitempty"`
 }
