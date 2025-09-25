@@ -1,14 +1,17 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+	"test-task/internal/service"
+)
 
 type API struct {
 	Tasks Tasks
 }
 
-func New(s TaskService) *API {
+func NewAPI(s *service.Service) *API {
 	return &API{
-		Tasks: Tasks{S: s}}
+		Tasks: Tasks{S: &serviceAdapter{s}}}
 }
 
 func NewMux(a *API) *http.ServeMux {
@@ -20,7 +23,7 @@ func NewMux(a *API) *http.ServeMux {
 	})
 
 	mux.HandleFunc("/tasks", a.Tasks.HandleCreate) // POST
-	mux.HandleFunc("/tasks", a.Tasks.HandleGet)    // GET by id
+	mux.HandleFunc("/tasks/", a.Tasks.HandleGet)   // GET by id
 
 	return mux
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"test-task/internal/service"
 	"test-task/internal/util"
 )
 
@@ -10,8 +11,20 @@ type TaskID interface {
 	GetID() string
 }
 
+type serviceAdapter struct {
+	s *service.Service
+}
+
+func (sa *serviceAdapter) NewTask(urls []string) string {
+	return sa.s.NewTask(urls)
+}
+
+func (sa *serviceAdapter) GetTask(id string) any {
+	return sa.s.GetTask(id)
+}
+
 type TaskService interface {
-	NewTask(urls []string) TaskID
+	NewTask(urls []string) string
 	GetTask(id string) any
 }
 
@@ -35,5 +48,5 @@ func (h Tasks) HandleCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := h.S.NewTask(body.URLs)
-	util.JSON(w, http.StatusAccepted, map[string]string{"id": id.GetID()})
+	util.JSON(w, http.StatusAccepted, map[string]string{"id": id})
 }
