@@ -32,7 +32,29 @@ func (s *Service) Start(ctx context.Context, workers int) {
 }
 
 func (s *Service) Load() {
-	if task, err := s.st.LoadTask(); err != nil {
-		s.tasks = task
+	tasks, err := s.st.LoadTask()
+	if err != nil {
+		return
+	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.tasks = tasks
+
+	//
+	for _, t := range s.tasks {
+		for i := range t.Files {
+			if t.Files[i].Status == models.Running {
+				t.Files[i].Status = models.Pending
+			}
+		}
+
+		//
+		for _, file := range t.Files {
+			if file.Status == models.Pending {
+				t.Status = models.TaskPending
+				s.q.Push(t.ID)
+				break
+			}
+		}
 	}
 }
