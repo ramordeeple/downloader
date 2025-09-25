@@ -32,7 +32,7 @@ func (s *Service) Start(ctx context.Context, workers int) {
 }
 
 func (s *Service) Load() {
-	if task, err := s.st.LoadTasks(); err != nil {
+	if task, err := s.st.LoadTask(); err != nil {
 		s.tasks = task
 	}
 }
