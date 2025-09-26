@@ -1,0 +1,26 @@
+### 1) Healthcheck
+GET http://localhost:8080/healthcheck
+
+
+### 2) Создание задач с большими файлами
+POST http://localhost:8080/tasks
+Content-Type: application/octet-stream
+
+{ "urls": [
+  "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
+  "https://golang.org/doc/gopher/frontpage.png"
+]}
+
+
+### 3) Проверка статуса (нужно подставить на полученный id)
+GET http://localhost:8080/tasks/f14a1d3db73b
+
+
+### 4) Инструкция:
+#  - Пока статус "running" в JSONе при скачивании файла, нужно остановить приложение (Stop в GoLand или Ctrl+C).
+#  - Запустить сервис снова.
+#  - Выполнить следующий запрос.
+
+
+### 5) Проверка, что задача не потерялась и продолжает обрабатываться
+GET http://localhost:8080/tasks/id
