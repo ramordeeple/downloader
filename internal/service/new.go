@@ -40,7 +40,6 @@ func (s *Service) Load() {
 	defer s.mutex.Unlock()
 	s.tasks = tasks
 
-	//
 	for _, t := range s.tasks {
 		for i := range t.Files {
 			if t.Files[i].Status == models.Running {
@@ -48,7 +47,6 @@ func (s *Service) Load() {
 			}
 		}
 
-		//
 		for _, file := range t.Files {
 			if file.Status == models.Pending {
 				t.Status = models.TaskPending

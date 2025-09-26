@@ -13,7 +13,7 @@ Content-Type: application/octet-stream
 
 
 ### 3) Проверка статуса (нужно подставить на полученный id)
-GET http://localhost:8080/tasks/f14a1d3db73b
+GET http://localhost:8080/tasks/id
 
 
 ### 4) Инструкция:
