@@ -133,7 +133,7 @@ test-task/
 
 - Worker — технический обработчик: берёт taskID из очереди и выполняет runTask.
 
-- Store — слой хранения: task.json для каждой задачи (data/<id>/task.json).
+- Store — слой хранения: task.json для каждой задачи (data/{id}/task.json).
 
 - Downloader — умеет качать файлы с поддержкой докачки (Range + .part файлы).
 
