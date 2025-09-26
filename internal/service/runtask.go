@@ -2,7 +2,11 @@ package service
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+	"test-task/internal/downloader"
 	"test-task/internal/models"
+	"time"
 )
 
 func (s *Service) get(id string) *models.Task {
@@ -13,26 +17,35 @@ func (s *Service) get(id string) *models.Task {
 }
 
 func (s *Service) runTask(ctx context.Context, id string) {
-	task := s.get(id)
-	if task == nil {
-		return
-	}
+	s.mutex.Lock()
+	t := s.tasks[id]
+	s.mutex.Unlock()
 
-	s.updateTask(task, models.TaskRunning)
-	for i := range task.Files {
-		s.updateFile(task, i, models.Running, "", 0)
+	outDir := filepath.Join("data", t.ID)
+	_ = os.MkdirAll(outDir, 0o755)
 
-		saved, size, err := s.dl.Fetch(ctx, task.Files[i].URL, task.Files[i].Name)
+	dl := downloader.NewHTTPDownloader(downloader.Config{
+		DownloadDir:   outDir,
+		ClientTimeout: 60 * time.Second,
+		MaxRetries:    2,
+	})
+
+	t.Status = models.TaskRunning
+	_ = s.st.SaveTask(t)
+
+	for i := range t.Files {
+		f := &t.Files[i]
+		f.Status = models.Running
+		_ = s.st.SaveTask(t)
+
+		name, size, err := dl.Fetch(context.Background(), f.URL, f.Name)
 		if err != nil {
-			s.updateFile(task, i, models.Failed, err.Error(), size)
+			f.Status, f.Error = models.Failed, err.Error()
 		} else {
-			s.setFileName(task, i, saved)
-			s.updateFile(task, i, models.Completed, "", size)
+			f.Status, f.Name, f.SizeBytes = models.Completed, name, size
 		}
-
-		_ = s.st.SaveTask(task)
+		s.finishStatus(t)
 	}
 
-	s.finishStatus(task)
-	_ = s.st.SaveTask(task)
+	s.finishStatus(t)
 }
