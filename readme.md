@@ -147,7 +147,7 @@ test-task/
 
 - Метаданные: data/<taskID>/task.json
 
-- Скачанные файлы: в той же папке data/<taskID>/ рядом с task.json.
+- Скачанные файлы: в той же папке data/{id}/ рядом с task.json.
 
 --- 
 
