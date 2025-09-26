@@ -15,10 +15,6 @@ func NewHTTPDownloader(cfg Config) *HTTPDownloader {
 		cfg.ClientTimeout = time.Second * 60
 	}
 
-	if cfg.DownloadDir == "" {
-		cfg.DownloadDir = "downloads"
-	}
-
 	if cfg.MaxRetries < 0 {
 		cfg.MaxRetries = 0
 	}
