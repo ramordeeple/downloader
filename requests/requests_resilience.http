@@ -7,8 +7,8 @@ POST http://localhost:8080/tasks
 Content-Type: application/octet-stream
 
 { "urls": [
-  "https://releases.ubuntu.com/24.04.3/ubuntu-24.04.3-desktop-amd64.iso",
-  "https://golang.org/doc/gopher/frontpage.png"
+  "https://golang.org/doc/gopher/frontpage.png",
+  "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.1.0-amd64-netinst.iso"
 ]}
 
 

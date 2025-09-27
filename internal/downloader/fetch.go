@@ -16,17 +16,28 @@ import (
 	"time"
 )
 
+const (
+	renameRetries = 3
+	renameDelay   = 50 * time.Millisecond
+)
+
 func (d *HTTPDownloader) Fetch(ctx context.Context, rawURL, suggestedName string) (string, int64, error) {
 	u, err := parseURL(rawURL)
 	if err != nil {
 		return "", 0, err
 	}
-	name := d.pickFileName(suggestedName, u)
-	if err := ensureDir(d.cfg.DownloadDir); err != nil {
+
+	dir := d.cfg.DownloadDir
+	if dir == "" {
+		dir = "."
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", 0, err
 	}
 
-	final, part := targetPaths(d.cfg.DownloadDir, name)
+	name := d.pickFileName(suggestedName, u)
+	final, part := targetPaths(dir, name)
+
 	if n, ok, err := alreadyDone(final); err != nil {
 		return "", 0, err
 	} else if ok {
@@ -34,6 +45,7 @@ func (d *HTTPDownloader) Fetch(ctx context.Context, rawURL, suggestedName string
 	}
 
 	offset := partOffset(part)
+
 	req, err := d.buildRequest(ctx, u.String(), offset)
 	if err != nil {
 		return "", 0, err
@@ -44,29 +56,36 @@ func (d *HTTPDownloader) Fetch(ctx context.Context, rawURL, suggestedName string
 	}
 	defer resp.Body.Close()
 
-	offset, err = validateResumeStatus(resp.StatusCode, offset)
-	if err != nil {
+	if offset, err = validateResumeStatus(resp.StatusCode, offset); err != nil {
 		return "", 0, err
 	}
 	if err := validateContentType(resp.Header.Get("Content-Type")); err != nil {
 		return "", 0, err
 	}
-	if disp := filenameFromDisposition(resp.Header); disp != "" {
+
+	if disp := filenameFromDisposition(resp.Header); disp != "" && disp != name {
 		name = disp
-		final, part = targetPaths(d.cfg.DownloadDir, name)
+		final, part = targetPaths(dir, name)
+		if n, ok, err := alreadyDone(final); err != nil {
+			return "", 0, err
+		} else if ok {
+			return filepath.Base(final), n, nil
+		}
+		offset = partOffset(part)
 	}
 
 	f, err := openPart(part, offset)
 	if err != nil {
 		return "", 0, err
 	}
-	defer f.Close()
 
 	written, err := copyBody(f, resp.Body, d.cfg.MaxFileBytes, offset)
 	if err != nil {
+		_ = f.Close()
 		return "", 0, err
 	}
-	if err := finalizePart(part, final); err != nil {
+
+	if err := finalizePartFile(f, part, final); err != nil {
 		return "", 0, err
 	}
 	return filepath.Base(final), offset + written, nil
@@ -85,18 +104,10 @@ func (d *HTTPDownloader) pickFileName(suggested string, u *url.URL) string {
 	if s := util.SanitizeFileName(strings.TrimSpace(suggested)); s != "" && s != "/" && s != "." {
 		return s
 	}
-	base := util.SanitizeFileName(path.Base(u.Path))
-	if base == "" || base == "/" || base == "." {
-		base = time.Now().Format("20060102_150405")
+	if base := util.SanitizeFileName(path.Base(u.Path)); base != "" && base != "/" && base != "." {
+		return base
 	}
-	return base
-}
-
-func ensureDir(dir string) error {
-	if dir == "" {
-		dir = "."
-	}
-	return os.MkdirAll(dir, 0o755)
+	return time.Now().Format("20060102_150405")
 }
 
 func targetPaths(dir, name string) (string, string) {
@@ -128,10 +139,6 @@ func openPart(part string, offset int64) (*os.File, error) {
 		return os.OpenFile(part, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0o644)
 	}
 	return os.Create(part)
-}
-
-func finalizePart(part, final string) error {
-	return os.Rename(part, final)
 }
 
 func (d *HTTPDownloader) buildRequest(ctx context.Context, urlStr string, offset int64) (*http.Request, error) {
@@ -181,17 +188,16 @@ func validateContentType(ct string) error {
 	}
 }
 
-func copyBody(dst io.Writer, src io.Reader, max int64, offset int64) (int64, error) {
+func copyBody(dst io.Writer, src io.Reader, max, offset int64) (int64, error) {
 	r := src
 	if max > 0 {
-		remain := max - offset
-		if remain <= 0 {
+		if remain := max - offset; remain <= 0 {
 			return 0, fmt.Errorf("max file size reached")
+		} else {
+			r = io.LimitReader(src, remain)
 		}
-		r = io.LimitReader(src, remain)
 	}
-	n, err := io.Copy(dst, r)
-	return n, err
+	return io.Copy(dst, r)
 }
 
 func filenameFromDisposition(h http.Header) string {
@@ -213,4 +219,20 @@ func filenameFromDisposition(h http.Header) string {
 		return util.SanitizeFileName(v)
 	}
 	return ""
+}
+
+func finalizePartFile(f *os.File, part, final string) error {
+	_ = f.Sync()
+	if err := f.Close(); err != nil {
+		return err
+	}
+	_ = os.Remove(final)
+	var err error
+	for i := 0; i < renameRetries; i++ {
+		if err = os.Rename(part, final); err == nil {
+			return nil
+		}
+		time.Sleep(renameDelay)
+	}
+	return err
 }
