@@ -6,9 +6,8 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"test-task/internal/platform/util"
 	"time"
-
-	"test-task/internal/util"
 )
 
 func (d *HTTPDownloader) pickFileName(suggested string, u *url.URL) string {

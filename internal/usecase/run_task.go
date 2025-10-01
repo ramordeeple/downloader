@@ -8,7 +8,6 @@ import (
 	"test-task/internal/domain"
 )
 
-// runTask выполняет задачу по её ID: скачивает файлы и обновляет статусы.
 func (s *TaskService) runTask(ctx context.Context, id string) {
 	s.mu.RLock()
 	t := s.tasks[id]
@@ -17,8 +16,7 @@ func (s *TaskService) runTask(ctx context.Context, id string) {
 		return
 	}
 
-	// директория для файлов задачи
-	outDir := filepath.Join("data", t.ID)
+	outDir := filepath.Join(s.dataDir, t.ID)
 	_ = os.MkdirAll(outDir, 0o755)
 
 	t.Status = domain.TaskRunning
@@ -26,6 +24,10 @@ func (s *TaskService) runTask(ctx context.Context, id string) {
 
 	for i := range t.Files {
 		f := &t.Files[i]
+		if f.Status == domain.Completed {
+			continue
+		}
+
 		f.Status = domain.Running
 		_ = s.repo.SaveTask(t)
 
@@ -44,7 +46,6 @@ func (s *TaskService) runTask(ctx context.Context, id string) {
 	s.updateTaskStatus(t)
 }
 
-// updateTaskStatus вычисляет и обновляет общий статус задачи.
 func (s *TaskService) updateTaskStatus(t *domain.Task) {
 	completed, failed := 0, 0
 	for _, f := range t.Files {
@@ -55,6 +56,7 @@ func (s *TaskService) updateTaskStatus(t *domain.Task) {
 			failed++
 		}
 	}
+
 	switch {
 	case completed == len(t.Files):
 		t.Status = domain.TaskCompleted

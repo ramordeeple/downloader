@@ -5,22 +5,6 @@ import (
 	"strings"
 )
 
-// TaskView — DTO для выдачи наружу (без лишних полей domain.Task).
-type TaskView struct {
-	ID        string     `json:"id"`
-	CreatedAt string     `json:"created_at"`
-	Status    string     `json:"status"`
-	Files     []FileView `json:"files"`
-}
-
-type FileView struct {
-	URL       string `json:"url"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	Error     string `json:"error,omitempty"`
-	SizeBytes int64  `json:"size_bytes,omitempty"`
-}
-
 type tasksGet struct {
 	uc TaskUsecase
 }
@@ -30,7 +14,6 @@ func (h *tasksGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	id := strings.TrimPrefix(r.URL.Path, "/tasks/")
 	if id == "" {
 		http.Error(w, "missing task id", http.StatusBadRequest)
@@ -46,6 +29,5 @@ func (h *tasksGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
-
-	writeJSON(w, http.StatusOK, t)
+	writeJSON(w, http.StatusOK, toView(t))
 }
