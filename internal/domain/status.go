@@ -1,4 +1,4 @@
-package models
+package domain
 
 type FileStatus string
 type TaskStatus string
