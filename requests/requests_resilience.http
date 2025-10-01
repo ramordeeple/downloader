@@ -1,8 +1,4 @@
-### 1) Healthcheck
-GET http://localhost:8080/healthcheck
-
-
-### 2) Создание задач с большими файлами
+### 1) Создание задач с большими файлами
 POST http://localhost:8080/tasks
 Content-Type: application/octet-stream
 
@@ -12,15 +8,13 @@ Content-Type: application/octet-stream
 ]}
 
 
-### 3) Проверка статуса (нужно подставить на полученный id)
-GET http://localhost:8080/tasks/id
+### 2) Проверка статуса (нужно подставить на полученный id)
+GET http://localhost:8080/tasks/fcc324bc8ccb
 
 
-### 4) Инструкция:
+### 3) Инструкция:
 #  - Пока статус "running" в JSONе при скачивании файла, нужно остановить приложение (Stop в GoLand или Ctrl+C).
 #  - Запустить сервис снова.
 #  - Выполнить следующий запрос.
 
 
-### 5) Проверка, что задача не потерялась и продолжает обрабатываться
-GET http://localhost:8080/tasks/id
