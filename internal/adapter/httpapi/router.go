@@ -1,17 +1,18 @@
-package api
+package httpapi
 
 import (
 	"net/http"
-	"test-task/internal/service"
+	"test-task/internal/api"
+	"test-task/internal/usecase"
 )
 
 type API struct {
 	Tasks Tasks
 }
 
-func NewAPI(s *service.Service) *API {
+func NewAPI(s *usecase.Service) *API {
 	return &API{
-		Tasks: Tasks{S: &serviceAdapter{s}}}
+		Tasks: Tasks{S: &api.serviceAdapter{s}}}
 }
 
 func NewMux(a *API) *http.ServeMux {

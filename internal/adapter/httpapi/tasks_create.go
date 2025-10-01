@@ -1,9 +1,9 @@
-package api
+package httpapi
 
 import (
 	"encoding/json"
 	"net/http"
-	"test-task/internal/service"
+	"test-task/internal/usecase"
 	"test-task/internal/util"
 )
 
@@ -12,7 +12,7 @@ type TaskID interface {
 }
 
 type serviceAdapter struct {
-	s *service.Service
+	s *usecase.Service
 }
 
 func (sa *serviceAdapter) NewTask(urls []string) string {
