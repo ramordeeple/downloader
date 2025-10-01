@@ -1,4 +1,4 @@
-package models
+package domain
 
 type File struct {
 	URL    string     `json:"url"`
