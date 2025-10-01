@@ -2,48 +2,70 @@ package app
 
 import (
 	"context"
-	"log"
 	"net/http"
-	"test-task/internal/api"
-	"test-task/internal/downloader"
-	"test-task/internal/service"
-	"test-task/internal/store"
-	"test-task/internal/util"
+	"sync"
+	"time"
+
+	"test-task/internal/adapter/downhttp"
+	"test-task/internal/adapter/httpapi"
+	"test-task/internal/adapter/storefs"
+	"test-task/internal/config"
+	"test-task/internal/platform/queue"
+	"test-task/internal/usecase"
 )
 
 type App struct {
-	server  *http.Server
-	service *service.Service
+	srv     *http.Server
+	uc      *usecase.TaskService
+	workers int
 }
 
-func New(cfg Config) *App {
-	st := store.NewFileSys(cfg.DataDir)
-	dl := downloader.NewHTTPDownloader(downloader.Config{
-		DownloadDir:   cfg.DownloadDir,
-		ClientTimeout: cfg.HTTPTimeout,
-	})
+type sysClock struct{}
 
-	s := service.New(st, dl, cfg.Svc)
-	s.Load()
+func (sysClock) Now() time.Time { return time.Now() }
 
-	mux := api.NewMux(api.NewAPI(s))
+func New(cfg config.App) *App {
+	repo := storefs.New(cfg.DataDir)
+	fetcher := downhttp.New(cfg.Dl)
+	q := queue.New(cfg.Svc.QueueSize)
+	clock := sysClock{}
+
+	uc := usecase.NewTaskService(
+		repo,
+		fetcher,
+		q,
+		clock,
+		cfg.DataDir,
+	)
+
+	mux := httpapi.New(uc)
+
 	srv := &http.Server{
-		Addr:    cfg.Addr,
-		Handler: util.LogRequests(mux),
+		Addr:         cfg.Addr,
+		Handler:      mux,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
 	}
-	return &App{server: srv, service: s}
+
+	return &App{
+		srv:     srv,
+		uc:      uc,
+		workers: cfg.Svc.Workers,
+	}
 }
 
-func (app *App) Start(ctx context.Context) {
-	app.service.Start(ctx, 4)
-	go func() {
-		log.Printf("listening on %s", app.server.Addr)
-		if err := app.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server error: %v", err)
-		}
-	}()
+func (a *App) Start() {
+	_ = a.uc.Restore()
+
+	a.uc.Start(a.workers)
+
+	go func() { _ = a.srv.ListenAndServe() }()
 }
 
-func (app *App) Shutdown(ctx context.Context) error {
-	return app.server.Shutdown(ctx)
+func (a *App) Shutdown(ctx context.Context) error {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	a.uc.Stop(&wg)
+	wg.Wait()
+	return a.srv.Shutdown(ctx)
 }
