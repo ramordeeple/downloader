@@ -6,10 +6,9 @@ import (
 )
 
 func RandID(n int) string {
-	if n <= 0 {
-		n = 6
-	}
 	b := make([]byte, n)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
 	return hex.EncodeToString(b)
 }
