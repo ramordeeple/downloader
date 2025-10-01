@@ -2,29 +2,19 @@ package httpapi
 
 import (
 	"net/http"
-	"test-task/internal/api"
-	"test-task/internal/usecase"
 )
 
-type API struct {
-	Tasks Tasks
+type TaskUsecase interface {
+	NewTask(urls []string) (string, error)
+	GetTask(id string) (*TaskView, error)
 }
 
-func NewAPI(s *usecase.Service) *API {
-	return &API{
-		Tasks: Tasks{S: &api.serviceAdapter{s}}}
-}
-
-func NewMux(a *API) *http.ServeMux {
+func New(uc TaskUsecase) http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/healthcheck", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("OK"))
-	})
+	mux.Handle("/tasks", &tasksCreate{uc: uc})
 
-	mux.HandleFunc("/tasks", a.Tasks.HandleCreate) // POST
-	mux.HandleFunc("/tasks/", a.Tasks.HandleGet)   // GET by id
+	mux.Handle("/tasks/", &tasksGet{uc: uc})
 
 	return mux
 }

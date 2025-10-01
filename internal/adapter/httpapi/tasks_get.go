@@ -3,21 +3,49 @@ package httpapi
 import (
 	"net/http"
 	"strings"
-	"test-task/internal/util"
 )
 
-func (h Tasks) HandleGet(w http.ResponseWriter, r *http.Request) {
+// TaskView — DTO для выдачи наружу (без лишних полей domain.Task).
+type TaskView struct {
+	ID        string     `json:"id"`
+	CreatedAt string     `json:"created_at"`
+	Status    string     `json:"status"`
+	Files     []FileView `json:"files"`
+}
+
+type FileView struct {
+	URL       string `json:"url"`
+	Name      string `json:"name"`
+	Status    string `json:"status"`
+	Error     string `json:"error,omitempty"`
+	SizeBytes int64  `json:"size_bytes,omitempty"`
+}
+
+type tasksGet struct {
+	uc TaskUsecase
+}
+
+func (h *tasksGet) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	id := strings.TrimPrefix(r.URL.Path, "/tasks/")
 	if id == "" {
-		util.ErrorJSON(w, http.StatusBadRequest, "missing id")
+		http.Error(w, "missing task id", http.StatusBadRequest)
 		return
 	}
 
-	task := h.S.GetTask(id)
-	if task == nil {
-		util.ErrorJSON(w, http.StatusNotFound, "task not found")
+	t, err := h.uc.GetTask(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if t == nil {
+		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
 
-	util.JSON(w, http.StatusOK, task)
+	writeJSON(w, http.StatusOK, t)
 }
