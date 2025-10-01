@@ -5,20 +5,22 @@ import (
 	"os/signal"
 	"syscall"
 	"test-task/internal/app"
-	"test-task/internal/service"
+	"test-task/internal/config"
 	"time"
 )
 
 func main() {
-	cfg := app.Config{
+	cfg := config.App{
 		Addr:        ":8080",
 		DataDir:     "data",
-		DownloadDir: "downloads",
 		HTTPTimeout: time.Second * 60,
-		MaxRetries:  2,
-		Svc: service.Config{
-			QueueSize: 200,
-			Workers:   4,
+		Svc: config.Service{
+			QueueSize: 100,
+			Workers:   2,
+		},
+		Dl: config.Downloader{
+			ClientTimeout: 60 * time.Second,
+			MaxRetries:    2,
 		},
 	}
 
