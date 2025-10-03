@@ -17,7 +17,7 @@ internal/
 ├── domain/           # Доменные сущности (Task, File, статусы)
 ├── usecase/          # Бизнес-логика (TaskService, воркеры, восстановление задач)
 ├── adapter/
-│   ├── httpapi/      # REST API: обработчики /tasks, /health
+│   ├── httpapi/      # REST API: обработчики /tasks
 │   ├── storefs/      # Хранилище задач в файловой системе (task.json)
 │   └── downhttp/     # Загрузчик файлов через HTTP с поддержкой докачки (.part)
 └── platform/
