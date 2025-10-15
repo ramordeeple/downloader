@@ -32,7 +32,7 @@ func main() {
 	defer stop()
 
 	a := app.New(cfg)
-	a.Start(ctx)
+	a.Start()
 
 	<-ctx.Done()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
