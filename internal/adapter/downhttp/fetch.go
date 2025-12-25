@@ -61,11 +61,13 @@ func (d *HTTPDownloader) Fetch(ctx context.Context, rawURL, suggestedName, outDi
 	if disp := filenameFromDisposition(resp.Header); disp != "" && disp != name {
 		name = disp
 		final, part = targetPaths(outDir, name)
+
 		if n, ok, err := alreadyDone(final); err != nil {
 			return "", 0, err
 		} else if ok {
 			return filepath.Base(final), n, nil
 		}
+
 		offset = partOffset(part)
 	}
 
@@ -87,7 +89,8 @@ func (d *HTTPDownloader) Fetch(ctx context.Context, rawURL, suggestedName, outDi
 	return filepath.Base(final), total, nil
 }
 
-// утилиты ниже
+/* утилиты ниже */
+
 func parseURL(raw string) (*url.URL, error) {
 	raw = strings.TrimSpace(raw)
 	u, err := url.ParseRequestURI(raw)

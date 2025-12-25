@@ -12,7 +12,7 @@ Content-Type: application/octet-stream
 GET http://localhost:8080/tasks/id
 
 
-### 3) Инструкция:
+# 3) Инструкция
 #  - Пока статус "running" в JSONе при скачивании файла, нужно остановить приложение (Stop в GoLand или Ctrl+C).
 #  - Запустить сервис снова.
 #  - Выполнить повторный GET-запрос.
