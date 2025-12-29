@@ -1,8 +1,8 @@
 package downhttp
 
 import (
+	"downloader/internal/config"
 	"net/http"
-	"test-task/internal/config"
 )
 
 type HTTPDownloader struct {

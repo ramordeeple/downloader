@@ -1,3 +1,3 @@
-module test-task
+module downloader
 
 go 1.25

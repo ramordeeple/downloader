@@ -1,6 +1,6 @@
 package usecase
 
-import "test-task/internal/domain"
+import "downloader/internal/domain"
 
 func (s *TaskService) Restore() error {
 	all, err := s.repo.LoadAll()

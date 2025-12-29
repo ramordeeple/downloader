@@ -1,7 +1,7 @@
 package httpapi
 
 import (
-	"test-task/internal/domain"
+	"downloader/internal/domain"
 	"time"
 )
 

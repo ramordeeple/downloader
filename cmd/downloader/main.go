@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"downloader/internal/app"
+	"downloader/internal/config"
 	"os/signal"
 	"syscall"
-	"test-task/internal/app"
-	"test-task/internal/config"
 	"time"
 )
 

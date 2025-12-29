@@ -1,8 +1,8 @@
 package httpapi
 
 import (
+	"downloader/internal/domain"
 	"net/http"
-	"test-task/internal/domain"
 )
 
 type TaskUsecase interface {

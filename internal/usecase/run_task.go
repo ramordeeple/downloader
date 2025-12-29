@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"test-task/internal/domain"
+	"downloader/internal/domain"
 )
 
 func (s *TaskService) runTask(ctx context.Context, id string) {

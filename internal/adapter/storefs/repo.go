@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"test-task/internal/domain"
-	"test-task/internal/usecase"
+	"downloader/internal/domain"
+	"downloader/internal/usecase"
 )
 
 // FileRepo реализует usecase.TaskRepo поверх файловой системы.

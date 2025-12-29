@@ -1,12 +1,12 @@
 package downhttp
 
 import (
+	"downloader/internal/platform/util"
 	"mime"
 	"net/http"
 	"net/url"
 	"path"
 	"strings"
-	"test-task/internal/platform/util"
 	"time"
 )
 

@@ -6,12 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"test-task/internal/adapter/downhttp"
-	"test-task/internal/adapter/httpapi"
-	"test-task/internal/adapter/storefs"
-	"test-task/internal/config"
-	"test-task/internal/platform/queue"
-	"test-task/internal/usecase"
+	"downloader/internal/adapter/downhttp"
+	"downloader/internal/adapter/httpapi"
+	"downloader/internal/adapter/storefs"
+	"downloader/internal/config"
+	"downloader/internal/platform/queue"
+	"downloader/internal/usecase"
 )
 
 type App struct {
