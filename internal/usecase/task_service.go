@@ -3,14 +3,14 @@ package usecase
 
 import (
 	"context"
+	"downloader/internal/config"
 	"path"
 	"strings"
 	"sync"
-	"test-task/internal/config"
 	"time"
 
-	"test-task/internal/domain"
-	"test-task/internal/platform/util"
+	"downloader/internal/domain"
+	"downloader/internal/platform/util"
 )
 
 type TaskRepo interface {
@@ -26,6 +26,10 @@ type Queue interface {
 	Push(id string)
 	Pop() <-chan string
 	Close()
+}
+
+type Extractor interface {
+	Extract(ctx context.Context, url string) ([]Media, error)
 }
 
 type Clock interface{ Now() time.Time }
