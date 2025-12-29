@@ -1,4 +1,3 @@
-// internal/usecase/task_service.go
 package usecase
 
 import (
@@ -26,10 +25,6 @@ type Queue interface {
 	Push(id string)
 	Pop() <-chan string
 	Close()
-}
-
-type Extractor interface {
-	Extract(ctx context.Context, url string) ([]Media, error)
 }
 
 type Clock interface{ Now() time.Time }
